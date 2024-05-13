@@ -3,8 +3,8 @@
 include("../../inc/mysqli_db_donation.php");
 
 $id = '';
-$name = '';
-$price = '';
+$school_id = '';
+$school_name = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     $id = $_GET["id"];
 
-    $sql = "SELECT * FROM food WHERE id = $id";
+    $sql = "SELECT * FROM mas_school WHERE id = $id";
     $result = mysqli_query($kty_donate, $sql);
     $row = $result->fetch_assoc();
 
@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     //     exit;
     // }
 
-    $name = $row["name"];
-    $price = $row["price"];
+    $school_id = $row["school_id"];
+    $school_name = $row["school_name"];
 } else {
 }
 
@@ -207,8 +207,12 @@ $title = "";
             /* color: #3aabf0; */
         }
 
-        .invoice-number {
-            padding-top: .17in;
+        .invoice-number1 {
+            padding-top: .25in;
+            float: right;
+        }
+        .invoice-number2 {
+            /* padding-top: .17in; */
             float: right;
         }
     </style>
@@ -242,95 +246,111 @@ $title = "";
             </script>
         </div>
         <div id="back" class="no-print">
-            <a class='btn btn-dark' href='index.php'><i class="fa fa-chevron-left" aria-hidden="true"></i> Back</a>
+            <a class='btn btn-dark' href='index.php'><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
         </div>
         <div class="pdf-page size-a4">
             <div class="pdf-header-center fw-bold">
-                รายละเอียดบิล
+                รายการมอบให้โรงเรียน
             </div>
-            <div class="test-pdf">
-            </div>
-            <div class="pdf-header">
+            <!-- <div class="pdf-header">
                 <span class="company-logo">
                     ชื่อโรงเรียน Test
                 </span>
-                <span class="invoice-number fw-bold">
+                <span class="invoice-number1 fw-bold">
                     Invoice No.12345
                 </span>
-            </div>
+            </div> -->
 
-            <!-- <table class="table table-bordered" style="margin-top: 20px;">
-            <thead>
-                <tr>
-                    <th class="text-center" style="width: 60px;font-size: 12px;font-weight: 100px;text-transform: capitalize;">
-                        ลำดับ
-                    </th>
-                    <th class="text-center" style="font-size: 12px;font-weight: 100px;text-transform: capitalize;">
-                        รายละเอียด
-                    </th>
-                    <th class="text-center" style="width: 100px;font-size: 12px;font-weight: 100px;text-transform: capitalize;">
-                        จำนวนที่ซื้อ
-                    </th>
-                    <th class="text-center" style="width: 120px;font-size: 12px;font-weight: 100px;text-transform: capitalize;">
-                        ราคา / หน่วย(บาท)
-                    </th>
-                    <th class="text-center" style="width: 100px;font-size: 12px;font-weight: 100px;text-transform: capitalize;">
-                        จำนวนเงิน(บาท)
-                    </th>
-                </tr>
-            </thead> -->
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <div class="row" style="padding: 58px; margin-top:30px;">
+            <div class="row" style="margin-top: 30px; padding: 0 50px 0 50px">
+                <div class="col d-flex flex-row-reverse 2" style="margin-right: 85px;">
+                    <div>
+                        <div class="row" style="width: 470px;">
+                            <div style="width: 100px">
+                                <span style="font-size: 12px;">
+                                    รหัสโรงเรียน                    
+                                </span>
+                            </div>
+                            <div class="col" style="">
+                                <span style="font-size: 12px;">
+                                    <?php echo $school_id ?>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 10px;">
+                            <div style="width: 100px;">
+                                <span style="font-size: 12px;">
+                                    ชื่อโรงเรียน                    
+                                </span>
+                            </div>
+                            <div class="col" style="width: 80px;">
+                                <span style="font-size: 12px;">
+                                    <?php echo $school_name ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col d-flex flex-row-reverse 2" style="width: 150px;margin-right: 14px;">
+                    <div>
+                        <div class="row" style="width: 200px;">
+                            <div style="width: 70px;">
+                                <span style="font-size: 12px;">
+                                    วันที่                    
+                                </span>
+                            </div>
+                            <div class="col" style="border-bottom: 1px solid black;">
+                                <span style="font-size: 12px;">
+                                    SO6705/8
+                                </span>
+                            </div>
+                        </div>
+                        <!-- <div class="row" style="margin-top: 10px;">
+                            <div style="width: 70px;">
+                                <span style="font-size: 12px;">
+                                    วันที่                    </span>
+                            </div>
+                            <div class="col" style="width: 80px;border-bottom: 1px solid black;">
+                                <span style="font-size: 12px;">08 พฤษภาคม 2567</span>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="padding: 70px 58px 0 58px;">
                 <table class="table table-bordered border-dark">
-                    <thead>
-                        <th>ลำดับ</th>
-                        <th>รายละเอียด</th>
-                        <th>จำนวนที่ซื้อ</th>
+                    <thead class="table-active">
+                        <th class='text-center'>ลำดับ</th>
+                        <th>รหัสโรงเรียน</th>
+                        <th class='text-center'>ชื่อโรงเรียน</th>
+                        <th>หมายเหตุ</th>
                     </thead>
                     <tbody>
-                        <tr class="table-active">
-                            <td>1.</td>
-                            <td><?php echo $name ?></td>
-                            <td><?php echo $price ?></td>
+                        <tr>
+                            <td class='text-center'>1.</td>
+                            <td><?php echo $school_id ?></td>
+                            <td><?php echo $school_name ?></td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td scope="row" class="table-active">รวม</td>
-                            <td colspan="2" class="table-active"><?php echo $price ?></td>
+                            <td scope="row" class="text-center">รวม</td>
+                            <td colspan="3"></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <div class="row">
+            <div class="row" style="padding: 450px 58px 0 58px;">
                 <div class="mt-5 col-6 text-center">
-                    <span class="col d-flex justify-content-center" style="font-size: 12px;margin-top: 5px;">....................................................</span>
-                    <span class="col d-flex justify-content-center" style="font-size: 12px;margin-top: 3px;">( Apisit Ngaosri )</span><br>
-                    <span class="col d-flex justify-content-center" style="font-size: 12px;margin-top: -20px;">
-                        <!-- Prepared By -->
-                        ผู้จัดทำ
+                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">....................................................</span>
+                    <span class="col d-flex justify-content-center" style="font-size: 9px;margin-top: 3px;">( <?php echo $school_name ?> )</span><br>
+                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: -20px;">
+                        ผู้ได้รับบริจาค
                     </span>
                 </div>
                 <div class="mt-5 col-6 text-center">
-                    <span class="col d-flex justify-content-center" style="font-size: 12px;margin-top: 5px;">....................................................</span>
-                    <span class="col d-flex justify-content-center" style="font-size: 12px;margin-top: 5px;">( .................................................... )</span><br>
-                    <span class="col d-flex justify-content-center" style="font-size: 12px;margin-top: -20px;">
-                        <!-- Authorized by -->
-                        ผู้รับมอบอำนาจ
+                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">....................................................</span>
+                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">( .................................................... )</span><br>
+                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: -20px;">
+                        ผู้บริจาค
                     </span>
                 </div>
             </div>
@@ -344,6 +364,6 @@ $title = "";
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
-<script src="../../js_donate/function_pdf.js"></script>
+<script src="../js_donate/function_pdf.js"></script>
 <script>
 </script>

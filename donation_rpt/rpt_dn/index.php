@@ -1,8 +1,7 @@
 <?php
-// include ("../../../inc/mysqli_db_donation.php");
 include("../../inc/mysqli_db_donation.php");
 
-$sql = "SELECT * FROM food";
+$sql = "SELECT * FROM mas_school";
 $result = mysqli_query($kty_donate, $sql);
 $resultCheck = mysqli_num_rows($result);
 
@@ -13,7 +12,6 @@ $resultCheck = mysqli_num_rows($result);
 // }
 
 $title = "";
-//include ("../menu/menu_head.php");
 ?>
 
 <!DOCTYPE html>
@@ -21,7 +19,7 @@ $title = "";
 
 <head>
     <meta charset="UTF-8">
-    <title>CV Printable A4</title>
+    <title>PDF</title>
 </head>
 <html>
 
@@ -30,8 +28,11 @@ $title = "";
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content="Margus Lillemagi - Curriculum Vitae" />
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.7/css/dataTables.bootstrap5.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/jq-3.6.0/jszip-2.5.0/dt-1.13.1/b-2.3.3/b-html5-2.3.3/b-print-2.3.3/fh-3.3.1/r-2.4.0/sb-1.4.0/datatables.min.css">
 
     <style>
         table.dataTable th.dt-type-numeric,
@@ -39,6 +40,10 @@ $title = "";
         table.dataTable td.dt-type-numeric,
         table.dataTable td.dt-type-date {
             text-align: left;
+        }
+        .page-item.active .page-link {
+            color: #fff !important;
+            background: #1F2226 !important;
         }
     </style>
 </head>
@@ -52,43 +57,47 @@ $title = "";
             <div class="form-group row col-md-10" style="justify-content: center;">
                 <div class="form-group col-md-4">
                     <label>รหัสโรงเรียน</label>
-                    <input type="text" class="form-control" id="search_text">
+                    <input type="text" class="form-control" id="search_text" onkeyup="checkSearch()">
                 </div>
                 <div class="form-group col-md-2">
                     <label></label>
                     <button id="btnSerarch" type="button" class="btn btn-warning btn-md form-control form-border title-search" onclick="search_text();">ค้นหา</button>
-                    <!-- <button id="btnSerarch" type="button" class="btn btn-warning btn-md form-control form-border title-search">ค้นหา</button> -->
                 </div>
             </div>
         </div>
-        <div class="row" style="padding: 30px; margin-top:30px;">
+        <div class="row" style="padding: 30px;">
             <table id="search_data" class="table table-dark table-hover">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>ชื่อ</th>
-                        <th>ราคา</th>
-                        <th>Action</th>
+                        <th>รหัสโรงเรียน</th>
+                        <th>ชื่อโรงเรียน</th>
+                        <th class='text-center'>Action</th>
                     </tr>
                 </thead>
                 <tbody id="result">
                 <?php
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        echo  "<tr>
-                                <td> $row[id] </td>
-                                <td> $row[name] </td>
-                                <td> $row[price] </td>
-                                <td>
-                                    <a class='btn btn-primary' href='edit.php?id=$row[id]'>PDF</a>
-                                </td>
-                            </tr>";
+                    if($resultCheck > 0) 
+                    {
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            echo  "<tr>
+                                    <td> $row[id] </td>
+                                    <td> $row[school_id] </td>
+                                    <td> $row[school_name] </td>
+                                    <td class='text-center'>
+                                        <a class='btn btn-sm btn-success' href='edit.php?id=$row[id]'><i class='fa fa-print' aria-hidden='true'></i> PDF</a>
+                                    </td>
+                                </tr>";
+                        }
+                    } else {
+                        echo "<tr>
+                            <td class='text-center' colspan='4'>No data</td>
+                        </tr>";
                     }
                 ?>
                 </tbody>
             </table>
         </div>
-        <!-- <div id="show_data">
-        </div> -->
     </div>
 </body>
 <html>
@@ -99,15 +108,34 @@ $title = "";
 <script src="https://cdn.datatables.net/2.0.7/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
 <script src="../../js_donate/function_pdf.js"></script>
+<script src="https://cdn.datatables.net/v/bs5/jq-3.6.0/jszip-2.5.0/dt-1.13.1/b-2.3.3/b-html5-2.3.3/b-print-2.3.3/fh-3.3.1/r-2.4.0/sb-1.4.0/datatables.min.js"></script>
+
 <script>
-    const mytableDatatable = $('#search_data').DataTable({
-        'searching': false,
-        "processing": true,
-        "order": [
-            [0, "asc"]
-        ],
+    $(document).ready(function () {
+        const mytableDatatable = $('#search_data').DataTable({
+            'searching': false,
+            // "serverSide": true,
+            "processing": true,
+            "order": [
+                [0, "asc"]
+            ],
+        });
+        // $('#btnSerarch').click(function() {
+        //     mytableDatatable.draw();
+        // });
     });
-    $('#btnSerarch').click(function() {
-        mytableDatatable.draw();
-    });
+</script>
+<script>
+    document.getElementById('btnSerarch').disabled = true
+    const checkSearch = ()=> {
+        let btn = document.getElementById('btnSerarch')
+        let search_text = document.getElementById('search_text').value
+        console.log("search_text", search_text);
+
+        if(!search_text == '') {
+            btn.disabled = false
+        } else {
+            btn.disabled = true
+        }
+    }
 </script>
