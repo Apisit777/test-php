@@ -32,6 +32,26 @@ $resultCheck = mysqli_num_rows($result);
 //         // echo "</pre>";
 // }  
 
+// $loanDebts = DB::table('pgs')
+//     ->select("id", "code", "fullname")
+//     ->get();
+
+// foreach ($loanDebts as $loanDebt) {
+//     $dataarray_code = [];
+//     $item_code = LoanDebt::select("code")
+//         ->where('code', '=', $loanDebt->code)
+//         ->get();
+        
+//     foreach ($item_code as $dataitem_code) {
+//         $dataarray_code[] = $dataitem_code->code;
+//     }
+//     $loanDebt->dataarray_code = $dataarray_code;
+// }
+// return response()->json($loanDebts);
+
+// Passing multiple variables between pages
+// <a class='btn btn-sm btn-success' href='edit.php?id=$row[id]&doc_no=$[doc_no]'><i class='fa fa-print' aria-hidden='true'></i> PDF</a>
+
 $title = "";
 ?>
 
