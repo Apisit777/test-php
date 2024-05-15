@@ -5,11 +5,32 @@ $sql = "SELECT * FROM mas_school";
 $result = mysqli_query($kty_donate, $sql);
 $resultCheck = mysqli_num_rows($result);
 
+// $sql = "SELECT trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id, trn_dona_tosc_head.do_reedem, SUM(do_reedem)
+// FROM trn_dona_tosc_head
+// LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+// LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+// WHERE trn_dona_tosc_list.product_id = 'P001'";
+
+// $sql = "SELECT trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id, trn_dona_tosc_head.do_reedem
+//         FROM trn_dona_tosc_head
+//         LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+//         LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no";
+
+// $result = mysqli_query($kty_donate, $sql) or die(mysqli_error());
+// $resultCheck = mysqli_num_rows($result);
+// $json_array = array();
+
 // if ($resultCheck > 0) {
-//     while ($row = mysqli_fetch_assoc($result)) {
-//         echo $row['id'] . " " . $row['name'] . " " . $row['price'] ."<br>";
-//     }
-// }
+//     while($row = mysqli_fetch_assoc($result))   {
+
+//         $json_array[] = $row;
+//     }		
+//         print(json_encode($json_array));
+
+//         // echo "<pre>";
+//         // print_r($json_array);
+//         // echo "</pre>";
+// }  
 
 $title = "";
 ?>
