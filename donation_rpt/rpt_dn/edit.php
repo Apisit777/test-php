@@ -14,18 +14,75 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // }
 
     $id = $_GET["id"];
+    $doc_no = $_GET["doc_no"];
 
-    $sql = "SELECT * FROM mas_school WHERE id = $id";
-    $result = mysqli_query($kty_donate, $sql);
-    $row = $result->fetch_assoc();
+    // $sql = "SELECT * FROM mas_school WHERE id = $id";
+    // $perpage = 20;
+    // $offset = (($page-1)*$perpage);
 
-    // if (!$row) {
-    //     header("location: /donation_rpt/rpt_dn/index.php");
-    //     exit;
+    $sql = "SELECT trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
+            FROM trn_dona_tosc_head
+            LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+            LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+            WHERE trn_dona_tosc_list.doc_no = '$doc_no'
+            GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id; ";
+
+    // if($page != 9999){
+    //     $sql_district .= " LIMIT $offset,$perpage  ";
     // }
 
-    $school_id = $row["school_id"];
+    $sql_sum = "SELECT SUM(do_reedem) AS total
+            FROM trn_dona_tosc_head
+            LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+            LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+            WHERE trn_dona_tosc_list.doc_no = '$doc_no' ";
+
+    $sql_do_reedem = "SELECT SUM(do_reedem) AS do_reedem
+                        FROM trn_dona_tosc_head
+                        LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+                        LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+                        WHERE trn_dona_tosc_list.doc_no = '$doc_no'
+                        GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id; ";
+
+    $result = mysqli_query($kty_donate, $sql);
+    $result_sum = mysqli_query($kty_donate, $sql_sum);
+
+    // $result_sum_do_reedem = mysqli_query($kty_donate, $sql_do_reedem);
+    // $resultCheck = mysqli_num_rows($result_sum_do_reedem);
+
+    $row = $result->fetch_assoc();
+    $row_sum = $result_sum->fetch_assoc();
+
+    $product_id = $row["product_id"];
+    $total = $row_sum["total"];
+
     $school_name = $row["school_name"];
+    $school_id = $row["school_id"];
+    $doc_datetime = $row["doc_datetime"];
+    $explode_doc_datetime = explode(" ", $doc_datetime);
+    $explode_doc_datetime = strtotime($explode_doc_datetime[0]);
+    $explode_doc_datetime = date('d-m-Y', $explode_doc_datetime);
+    function DateThai($explode_doc_datetime)
+        {
+            $strYear = date("Y",strtotime($explode_doc_datetime))+543;
+            $strMonth= date("n",strtotime($explode_doc_datetime));
+            $strDay= date("j",strtotime($explode_doc_datetime));
+            $strHour= date("H",strtotime($explode_doc_datetime));
+            $strMinute= date("i",strtotime($explode_doc_datetime));
+            $strSeconds= date("s",strtotime($explode_doc_datetime));
+            $strMonthCut = Array("","ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค.");
+            $strMonthThai = $strMonthCut[$strMonth];
+            return "$strDay $strMonthThai $strYear";
+            // return "$strDay $strMonthThai $strYear, $strHour:$strMinute:$strSeconds";
+        }
+        // echo "ThaiCreate.Com Time now : ".DateThai($explode_doc_datetime);
+
+    // $do_reedem = $row["do_reedem"];
+    // $numbers = [1, 2, 3000, 4000, 5000];
+
+    // foreach ($numbers as $key => $value) {
+    //     print(json_encode(number_format($value, 2)));
+    // }
 } else {
 }
 
@@ -56,6 +113,7 @@ $title = "";
     <style>
         body {
             background: rgb(204, 204, 204);
+            /* background-image: url("https://www.ssup.co.th/wp-content/uploads/2022/11/site-logo-g.png"); */
         }
 
         page {
@@ -219,21 +277,6 @@ $title = "";
 </head>
 
 <body id="top">
-    <!-- <div class="justify-center items-center">
-        <div class="mt-5 mb-3 flex justify-center items-center">
-            <p class="inline-block space-y-2 border-b border-blue-500 text-xl font-bold">รายระเอียดโรงเรียน</p>
-        </div>
-        <div class="row flex justify-center items-center mb-3">
-            <div class="form-group row col-md-10" style="justify-content: center;">
-                <form action="">
-                    <input type="hidden" value="">
-                    <div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div> -->
-
     <!--Page 1-->
     <page size="A4">
         <div id="button" class="no-print">
@@ -249,42 +292,43 @@ $title = "";
             <a class='btn btn-dark' href='index.php'><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
         </div>
         <div class="pdf-page size-a4">
-            <div class="pdf-header-center fw-bold">
+            <!-- <div class="d-flex flex-row" style="width: 100%;">
+                <div style="margin-top: 28px; margin-right: 133px; margin-left: 50px;">
+                    <img src="https://www.ssup.co.th/wp-content/uploads/2022/11/site-logo-g.png" style="width: 140px;">
+                </div>
+                <div class="pdf-header-center fw-bold">
+                    รายการมอบให้โรงเรียน
+                </div>
+            </div> -->
+            <div class="pdf-header-center fw-bold" style="font-size: 18px; font-weight: 500; color: #1E988A;">
                 รายการมอบให้โรงเรียน
             </div>
-            <!-- <div class="pdf-header">
-                <span class="company-logo">
-                    ชื่อโรงเรียน Test
-                </span>
-                <span class="invoice-number1 fw-bold">
-                    Invoice No.12345
-                </span>
-            </div> -->
 
             <div class="row" style="margin-top: 30px; padding: 0 50px 0 50px">
                 <div class="col d-flex flex-row-reverse 2" style="margin-right: 85px;">
                     <div>
                         <div class="row" style="width: 470px;">
-                            <div style="width: 100px">
+                            <div style="width: 118px">
                                 <span style="font-size: 12px;">
-                                    รหัสโรงเรียน                    
+                                    เลขที่รายการสินค้า                 
                                 </span>
                             </div>
                             <div class="col" style="">
                                 <span style="font-size: 12px;">
-                                    <?php echo $school_id ?>
+                                    <?php echo $product_id ?>
                                 </span>
                             </div>
                         </div>
                         <div class="row" style="margin-top: 10px;">
-                            <div style="width: 100px;">
+                            <div style="width: 118px;">
                                 <span style="font-size: 12px;">
-                                    ชื่อโรงเรียน                    
+                                    ชื่อโครงการ                  
                                 </span>
                             </div>
                             <div class="col" style="width: 80px;">
                                 <span style="font-size: 12px;">
-                                    <?php echo $school_name ?>
+                                    กตัญญู
+                                    <!-- <?php echo $school_name ?> -->
                                 </span>
                             </div>
                         </div>
@@ -298,9 +342,9 @@ $title = "";
                                     วันที่                    
                                 </span>
                             </div>
-                            <div class="col" style="border-bottom: 1px solid black;">
+                            <div class="col text-center" style="border-bottom: 1px solid black;">
                                 <span style="font-size: 12px;">
-                                    SO6705/8
+                                    <?php echo DateThai($explode_doc_datetime); ?>
                                 </span>
                             </div>
                         </div>
@@ -316,29 +360,37 @@ $title = "";
                     </div>
                 </div>
             </div>
-            <div class="row" style="padding: 70px 58px 0 58px;">
+            <div class="row" style="position: relative; padding: 70px 58px 0 58px;">
                 <table class="table table-bordered border-dark">
                     <thead class="table-active">
                         <th class='text-center'>ลำดับ</th>
-                        <th>รหัสโรงเรียน</th>
+                        <th class='text-center'>เลขที่เอกสาร</th>
                         <th class='text-center'>ชื่อโรงเรียน</th>
-                        <th>หมายเหตุ</th>
+                        <th class='text-center'>ยอดเงิน(บาท)</th>
+                        <!-- <th>หมายเหตุ</th> -->
                     </thead>
                     <tbody>
+                    <?php
+                    $x = 1;
+                    while ($row = mysqli_fetch_object($result)) 
+                    {
+                    ?>
                         <tr>
-                            <td class='text-center'>1.</td>
-                            <td><?php echo $school_id ?></td>
-                            <td><?php echo $school_name ?></td>
-                            <td></td>
+                            <td class='text-center' style='font-size: 14px;'> <?php echo $x++; ?></td>
+                            <td class='text-center' style='font-size: 14px;'> <?php echo $row->doc_no; ?></td>
+                            <td style='font-size: 14px;'> <?php echo $row->school_name; ?></td>
+                            <td class='text-end' style='font-size: 14px;'> <?php echo number_format($row->do_reedem, 2); ?></td>
+                            <!-- <td style='font-size: 14px;'></td> -->
                         </tr>
+                    <?php } ?>
                         <tr>
                             <td scope="row" class="text-center">รวม</td>
-                            <td colspan="3"></td>
+                            <td colspan="4" class="text-end">฿ <?php echo number_format($total, 2); ?> บาท</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="row" style="padding: 450px 58px 0 58px;">
+            <div class="row" style="top-100px; padding: 0 58px 10px 58px;">
                 <div class="mt-5 col-6 text-center">
                     <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">....................................................</span>
                     <span class="col d-flex justify-content-center" style="font-size: 9px;margin-top: 3px;">( <?php echo $school_name ?> )</span><br>

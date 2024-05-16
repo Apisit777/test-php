@@ -11,14 +11,12 @@ $resultCheck = mysqli_num_rows($result);
 // LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
 // WHERE trn_dona_tosc_list.product_id = 'P001'";
 
-// $sql = "SELECT trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id, trn_dona_tosc_head.do_reedem
-//         FROM trn_dona_tosc_head
-//         LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
-//         LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no";
+$sql = "SELECT trn_dona_tosc_head.id AS id, trn_dona_tosc_head.doc_no AS doc_no
+        FROM trn_dona_tosc_head";
 
-// $result = mysqli_query($kty_donate, $sql) or die(mysqli_error());
-// $resultCheck = mysqli_num_rows($result);
-// $json_array = array();
+$result = mysqli_query($kty_donate, $sql) or die(mysqli_error());
+$resultCheck = mysqli_num_rows($result);
+$json_array = array();
 
 // if ($resultCheck > 0) {
 //     while($row = mysqli_fetch_assoc($result))   {
@@ -97,7 +95,7 @@ $title = "";
         <div class="row flex justify-center items-center mb-3">
             <div class="form-group row col-md-10" style="justify-content: center;">
                 <div class="form-group col-md-4">
-                    <label>รหัสโรงเรียน</label>
+                    <label>เลขที่เอกสาร</label>
                     <input type="text" class="form-control" id="search_text" onkeyup="checkSearch()">
                 </div>
                 <div class="form-group col-md-2">
@@ -111,8 +109,8 @@ $title = "";
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>รหัสโรงเรียน</th>
-                        <th>ชื่อโรงเรียน</th>
+                        <th>เลขที่เอกสาร</th>
+                        <!-- <th>ชื่อโรงเรียน</th> -->
                         <th class='text-center'>Action</th>
                     </tr>
                 </thead>
@@ -123,10 +121,9 @@ $title = "";
                         while ($row = mysqli_fetch_assoc($result)) {
                             echo  "<tr>
                                     <td> $row[id] </td>
-                                    <td> $row[school_id] </td>
-                                    <td> $row[school_name] </td>
+                                    <td> $row[doc_no] </td>
                                     <td class='text-center'>
-                                        <a class='btn btn-sm btn-success' href='edit.php?id=$row[id]'><i class='fa fa-print' aria-hidden='true'></i> PDF</a>
+                                        <a class='btn btn-sm btn-success' href='edit.php?id=$row[id]&doc_no=$row[doc_no]'><i class='fa fa-print' aria-hidden='true'></i> PDF</a>
                                     </td>
                                 </tr>";
                         }
