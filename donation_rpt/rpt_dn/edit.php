@@ -83,10 +83,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // foreach ($numbers as $key => $value) {
     //     print(json_encode(number_format($value, 2)));
     // }
+    
+    $start = 0;
+    $rows_per_page = 5;
+
+    $records = "SELECT * FROM trn_dona_tosc_head";
+    $nr_of_rows = $records->num_rows;
+
+    $pages = ceil($nr_of_rows / $rows_per_page);
+
+    if(isset($_GET['page-nr'])) {
+        $_GET['page-nr'] - 1;
+        $start = $page * $rows_per_page;
+    }
+
+    $sql_limit = "SELECT * FROM trn_dona_tosc_head  LIMIT $start, $rows_per_page ";
+    $result_limit = mysqli_query($kty_donate, $sql_limit);
+
 } else {
 }
 
-$title = "";
 ?>
 
 <!DOCTYPE html>
@@ -273,10 +289,101 @@ $title = "";
             /* padding-top: .17in; */
             float: right;
         }
+        /* ********************************************************** */
+        .test_limit {
+            padding: 70px 0 0 100px;
+        }
+        a {
+            display: inline-block;
+            text-decoration: none;
+            color: #fff;
+            padding: 10px 20px;
+            border: thin solid #555;
+            font-size: 18px;
+        }
+        a.active {
+            background-color: #0d81cd;
+            color:  #fff;
+            border: thin solid #0d81cd;
+        }
+        a:focus {
+            border: 1px solid #00ff00;
+        }
+        .page-info {
+            margin-top: 90px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .pagination {
+            margin-top: 20px;
+        }
+        .content p {
+            margin-bottom: 25px;
+        }
+        .page-numbers {
+            display: inline-block;
+        }
     </style>
 </head>
 
 <body id="top">
+    <div class="test_limit content">
+        <?php 
+            while($row = $result_limit->fetch_assoc()) {
+                ?>
+                    <p>
+                        <?php echo $row['id'] ?> - <?php  echo $row['doc_no']?>
+                    </p>
+                <?php 
+            }
+        ?>
+
+        <div class="page-info">
+                showing 1 of <?php echo $pages ?>
+        </div>
+
+        <div class="pagination">
+                <a href="?page-nr=1">First</a>
+                <?php
+                    if(isset($_GET['page-nr']) && $_GET['page-nr'] > 1) {
+                        ?>
+                            <a href="?page-nr=<?php echo $_GET['page-nr'] - 1 ?>">Previous</a>
+                        <?php
+                    } else {
+                        ?>
+                            <a>Previous</a>
+                        <?php
+                    }
+                ?>
+                <div class="page-numbers">
+                    <a href="">1</a>
+                    <a href="">2</a>
+                    <a href="">3</a>
+                    <a href="">4</a>
+                    <a href="">5</a>
+                </div>
+                <?php
+                    if(isset($_GET['page-nr'])) {
+                        ?>
+                            <a href="?page-nr=2">Next</a>
+                        <?php
+                    } else {
+                        if($_GET['page-nr'] >= $pages) {
+                            ?>
+                                <a>Next</a>
+                            <?php
+                        } else {
+                            ?>
+                                <a href="?page-nr=<?php echo $_GET['page-nr'] + 1 ?>">Next</a>
+                            <?php
+                        }
+                    }
+                ?>
+                <a href="?page-nr=<?php echo $pages ?>">Last</a>
+        </div>
+    </div>
+
+    
     <!--Page 1-->
     <page size="A4">
         <div id="button" class="no-print">
