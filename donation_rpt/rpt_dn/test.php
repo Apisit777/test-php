@@ -16,6 +16,12 @@ include("../../inc/mysqli_db_donation.php");
 
     $sql_limit = "SELECT * FROM trn_dona_tosc_head  LIMIT $start, $rows_per_page ";
     $result_limit = mysqli_query($kty_donate, $sql_limit);
+    $json_array_result = array();
+    while($row = mysqli_fetch_object($result_limit))   {
+
+        $json_array_result[] = $row;
+    }		
+    print(json_encode($json_array_result));
 
 ?>
 

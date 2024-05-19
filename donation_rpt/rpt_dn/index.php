@@ -14,7 +14,7 @@ $resultCheck = mysqli_num_rows($result);
 $sql = "SELECT trn_dona_tosc_head.id AS id, trn_dona_tosc_head.doc_no AS doc_no
         FROM trn_dona_tosc_head";
 
-$result = mysqli_query($kty_donate, $sql) or die(mysqli_error());
+$result = mysqli_query($kty_donate, $sql) or die(mysqli_error($kty_donate));
 $resultCheck = mysqli_num_rows($result);
 $json_array = array();
 

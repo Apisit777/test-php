@@ -8,57 +8,74 @@ $school_name = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-    // if ( !isset($_GET["id"]) ) {
-    //     header("location: /donation_rpt/rpt_dn/index.php");
-    //     exit;
-    // }
-
     $id = $_GET["id"];
     $doc_no = $_GET["doc_no"];
 
-    // $sql = "SELECT * FROM mas_school WHERE id = $id";
-    // $perpage = 20;
-    // $offset = (($page-1)*$perpage);
+    $start = 0;
+    $rows_per_page = 8;
 
-    $sql = "SELECT trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
+    $records = $kty_donate->query("SELECT * FROM trn_dona_tosc_head");
+    $nr_of_rows = $records->num_rows;
+
+    $pages = ceil($nr_of_rows / $rows_per_page);
+
+    if(isset($_GET['page-nr'])) {
+        $page = $_GET['page-nr'] - 1;
+        $start = $page * $rows_per_page;
+    }
+
+    $sql_limit = "SELECT trn_dona_tosc_list.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
+                  FROM trn_dona_tosc_head
+                  LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+                  LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+                  WHERE trn_dona_tosc_list.doc_no = '$doc_no'
+                  GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id
+                  LIMIT $start, $rows_per_page";
+
+    $sql = "SELECT trn_dona_tosc_list.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
             FROM trn_dona_tosc_head
             LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
             LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
             WHERE trn_dona_tosc_list.doc_no = '$doc_no'
-            GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id; ";
-
-    // if($page != 9999){
-    //     $sql_district .= " LIMIT $offset,$perpage  ";
-    // }
+            GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id";
 
     $sql_sum = "SELECT SUM(do_reedem) AS total
-            FROM trn_dona_tosc_head
-            LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
-            LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
-            WHERE trn_dona_tosc_list.doc_no = '$doc_no' ";
+                FROM trn_dona_tosc_head
+                LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+                LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+                WHERE trn_dona_tosc_list.doc_no = '$doc_no' ";
 
-    $sql_do_reedem = "SELECT SUM(do_reedem) AS do_reedem
-                        FROM trn_dona_tosc_head
-                        LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
-                        LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
-                        WHERE trn_dona_tosc_list.doc_no = '$doc_no'
-                        GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id; ";
+    $sql_text = "SELECT trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime
+                FROM trn_dona_tosc_head
+                LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+                LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+                WHERE trn_dona_tosc_list.doc_no = '$doc_no'";
 
-    $result = mysqli_query($kty_donate, $sql);
+    $result = mysqli_query($kty_donate, $sql) or die(mysqli_error($kty_donate));
+    $result_text = mysqli_query($kty_donate, $sql_text) or die(mysqli_error($kty_donate));
+    $json_array_result = array();
+    $json_array_result[] = $result;
+
+    while($row = mysqli_fetch_object($result))   {
+
+        $json_array_result[] = $row;
+    }		
+    print(json_encode($json_array_result));
+
     $result_sum = mysqli_query($kty_donate, $sql_sum);
-
     // $result_sum_do_reedem = mysqli_query($kty_donate, $sql_do_reedem);
     // $resultCheck = mysqli_num_rows($result_sum_do_reedem);
 
     $row = $result->fetch_assoc();
+    $row_text = $result_text->fetch_assoc();
     $row_sum = $result_sum->fetch_assoc();
 
-    $product_id = $row["product_id"];
+    $product_id = $row_text["product_id"];
     $total = $row_sum["total"];
 
-    $school_name = $row["school_name"];
-    $school_id = $row["school_id"];
-    $doc_datetime = $row["doc_datetime"];
+    // $school_name = $row["school_name"];
+    // $school_id = $row["school_id"];
+    $doc_datetime = $row_text["doc_datetime"];
     $explode_doc_datetime = explode(" ", $doc_datetime);
     $explode_doc_datetime = strtotime($explode_doc_datetime[0]);
     $explode_doc_datetime = date('d-m-Y', $explode_doc_datetime);
@@ -83,24 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // foreach ($numbers as $key => $value) {
     //     print(json_encode(number_format($value, 2)));
     // }
-    
-    $start = 0;
-    $rows_per_page = 5;
 
-    $records = "SELECT * FROM trn_dona_tosc_head";
-    $nr_of_rows = $records->num_rows;
-
-    $pages = ceil($nr_of_rows / $rows_per_page);
-
-    if(isset($_GET['page-nr'])) {
-        $_GET['page-nr'] - 1;
-        $start = $page * $rows_per_page;
-    }
-
-    $sql_limit = "SELECT * FROM trn_dona_tosc_head  LIMIT $start, $rows_per_page ";
-    $result_limit = mysqli_query($kty_donate, $sql_limit);
-
-} else {
 }
 
 ?>
@@ -129,7 +129,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     <style>
         body {
             background: rgb(204, 204, 204);
-            /* background-image: url("https://www.ssup.co.th/wp-content/uploads/2022/11/site-logo-g.png"); */
         }
 
         page {
@@ -143,6 +142,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         page[size="A4"] {
             width: 210mm;
             height: 297mm;
+            
+        }
+        .background_img {
+            background-image: url("https://www.ssup.co.th/wp-content/uploads/2022/11/site-logo-g.png");
+            z-index: 1;
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            left: -433px;
+            transform: rotate(25deg);
         }
 
         @page {
@@ -153,8 +162,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         @media print {
 
             /* Print settings */
-            html,
-            body,
+            body {
+                margin-left: 0 !important;
+            }
+
             page {
                 width: 210mm;
                 height: 100%;
@@ -162,7 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 padding: 0 !important;
                 overflow: hidden;
             }
-
+            .print_page_number{
+                right: -70 !important;
+            }
             .no-overflow {
                 overflow: hidden;
             }
@@ -208,6 +221,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             .no-print,
             .no-print * {
                 display: none !important;
+            }
+
+            #print_page{
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
+                display: block !important;
             }
         }
 
@@ -263,7 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         .pdf-page {
             margin: 0 auto;
             box-sizing: border-box;
-            box-shadow: 0 5px 10px 0 rgba(0, 0, 0, .3);
+            /* box-shadow: 0 5px 10px 0 rgba(0, 0, 0, .3); */
             color: #333;
             position: relative;
 
@@ -323,198 +343,172 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         .page-numbers {
             display: inline-block;
         }
+
     </style>
 </head>
 
-<body id="top">
-    <div class="test_limit content">
-        <?php 
-            while($row = $result_limit->fetch_assoc()) {
-                ?>
-                    <p>
-                        <?php echo $row['id'] ?> - <?php  echo $row['doc_no']?>
-                    </p>
-                <?php 
-            }
-        ?>
-
-        <div class="page-info">
-                showing 1 of <?php echo $pages ?>
-        </div>
-
-        <div class="pagination">
-                <a href="?page-nr=1">First</a>
-                <?php
-                    if(isset($_GET['page-nr']) && $_GET['page-nr'] > 1) {
-                        ?>
-                            <a href="?page-nr=<?php echo $_GET['page-nr'] - 1 ?>">Previous</a>
-                        <?php
-                    } else {
-                        ?>
-                            <a>Previous</a>
-                        <?php
-                    }
-                ?>
-                <div class="page-numbers">
-                    <a href="">1</a>
-                    <a href="">2</a>
-                    <a href="">3</a>
-                    <a href="">4</a>
-                    <a href="">5</a>
-                </div>
-                <?php
-                    if(isset($_GET['page-nr'])) {
-                        ?>
-                            <a href="?page-nr=2">Next</a>
-                        <?php
-                    } else {
-                        if($_GET['page-nr'] >= $pages) {
-                            ?>
-                                <a>Next</a>
-                            <?php
-                        } else {
-                            ?>
-                                <a href="?page-nr=<?php echo $_GET['page-nr'] + 1 ?>">Next</a>
-                            <?php
-                        }
-                    }
-                ?>
-                <a href="?page-nr=<?php echo $pages ?>">Last</a>
-        </div>
-    </div>
-
-    
-    <!--Page 1-->
-    <page size="A4">
+<body id="top <?php echo $id ?>">
+    <div id="print_page">
         <div id="button" class="no-print">
             <button type="button" onclick="myFunction()"><span class="button-txt"><i class="fa fa-print" aria-hidden="true"></i>
                     &nbsp;Print</span></button>
-            <script>
-                function myFunction() {
-                    window.print();
-                }
-            </script>
         </div>
         <div id="back" class="no-print">
             <a class='btn btn-dark' href='index.php'><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
         </div>
-        <div class="pdf-page size-a4">
-            <!-- <div class="d-flex flex-row" style="width: 100%;">
-                <div style="margin-top: 28px; margin-right: 133px; margin-left: 50px;">
-                    <img src="https://www.ssup.co.th/wp-content/uploads/2022/11/site-logo-g.png" style="width: 140px;">
-                </div>
-                <div class="pdf-header-center fw-bold">
-                    รายการมอบให้โรงเรียน
-                </div>
-            </div> -->
-            <div class="pdf-header-center fw-bold" style="font-size: 18px; font-weight: 500; color: #1E988A;">
-                รายการมอบให้โรงเรียน
-            </div>
-
-            <div class="row" style="margin-top: 30px; padding: 0 50px 0 50px">
-                <div class="col d-flex flex-row-reverse 2" style="margin-right: 85px;">
-                    <div>
-                        <div class="row" style="width: 470px;">
-                            <div style="width: 118px">
-                                <span style="font-size: 12px;">
-                                    เลขที่รายการสินค้า                 
-                                </span>
+        <?php $arr = range(1, $pages);
+            foreach($arr as $page_key=> $value): 
+                ?>
+                    <!--Page -->
+                    <page size="A4" style="position: relative; overflow: hidden;">
+                        <!-- <div class="background_img">
+                        </div>                            -->
+                        <span class="print_page_number" style="position: absolute; top: 15px; right: 10px">
+                            <?php echo $page_key + 1; ?>
+                        </span>
+                        <?php 
+                            if($page_key == 0) {
+                                ?>
+                                    <!-- <div class="d-flex flex-row" style="width: 100%;">
+                                        <div style="margin-top: 28px; margin-right: 133px; margin-left: 50px;">
+                                            <img src="https://www.ssup.co.th/wp-content/uploads/2022/11/site-logo-g.png" style="width: 140px;">
+                                        </div>
+                                        <div class="pdf-header-center fw-bold" style="font-size: 18px; font-weight: 500; color: #1E988A;">
+                                            รายการมอบให้โรงเรียน
+                                        </div>
+                                    </div> -->
+                                    <div class="pdf-header-center fw-bold" style="font-size: 18px; font-weight: 500; color: #1E988A;">
+                                        รายการมอบให้โรงเรียน
+                                    </div>
+                                    <div class="row" style="margin-top: 30px; padding: 0 50px 0px 50px">
+                                        <div class="col d-flex flex-row-reverse 2" style="margin-right: 80px;">
+                                            <div>
+                                                <div class="row" style="width: 470px;">
+                                                    <div style="width: 118px">
+                                                        <span style="font-size: 12px;">
+                                                            เลขที่รายการสินค้า                 
+                                                        </span>
+                                                    </div>
+                                                    <div class="col" style="">
+                                                        <span style="font-size: 12px;">
+                                                            <?php echo $product_id ?>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="row" style="margin-top: 10px;">
+                                                    <div style="width: 118px;">
+                                                        <span style="font-size: 12px;">
+                                                            ชื่อโครงการ                  
+                                                        </span>
+                                                    </div>
+                                                    <div class="col" style="width: 80px;">
+                                                        <span style="font-size: 12px;">
+                                                            กตัญญู
+                                                            <!-- <?php echo $school_name ?> -->
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col d-flex flex-row-reverse 2" style="width: 150px;margin-right: 14px;">
+                                            <div>
+                                                <div class="row" style="width: 200px;">
+                                                    <div style="width: 70px;">
+                                                        <span style="font-size: 12px;">
+                                                            วันที่                    
+                                                        </span>
+                                                    </div>
+                                                    <div class="col text-center" style="border-bottom: 1px solid black;">
+                                                        <span style="font-size: 12px;">
+                                                            <?php echo DateThai($explode_doc_datetime); ?>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <!-- <div class="row" style="margin-top: 10px;">
+                                                    <div style="width: 70px;">
+                                                        <span style="font-size: 12px;">
+                                                            วันที่                    </span>
+                                                    </div>
+                                                    <div class="col" style="width: 80px;border-bottom: 1px solid black;">
+                                                        <span style="font-size: 12px;">08 พฤษภาคม 2567</span>
+                                                    </div>
+                                                </div> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php
+                            }
+                        ?>
+                        <div class="pdf-page size-a4" style="padding-bottom: 175px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div class="row" style="position: relative; padding: 70px 58px 0 58px;">
+                                <table class="table table-bordered border-dark">
+                                    <thead class="table-active">
+                                        <th class='text-center'>ลำดับ</th>
+                                        <th class='text-center'>เลขที่เอกสาร</th>
+                                        <th class='text-center'>ชื่อโรงเรียน</th>
+                                        <th class='text-center'>ยอดเงิน(บาท)</th>
+                                        <!-- <th>หมายเหตุ</th> -->
+                                    </thead>
+                                    <tbody>
+                                    <?php
+                                        $data_slice = array_slice($json_array_result, $page_key * $rows_per_page, $rows_per_page);
+                                        foreach($data_slice as $key => $row): 
+                                            ?>
+                                                <tr>
+                                                    <td class='text-center' style='font-size: 14px;'> 
+                                                        <?php
+                                                            $x = $key+1+($rows_per_page * $page_key);
+                                                            echo $x; 
+                                                        ?>
+                                                    </td>
+                                                    <td class='text-center' style='font-size: 14px;'> <?php echo $row->doc_no; ?></td>
+                                                    <td style='font-size: 14px;'> <?php echo $row->school_name; ?></td>
+                                                    <td class='text-end' style='font-size: 14px;'> <?php echo number_format($row->do_reedem, 2); ?></td>
+                                                </tr>
+                                            <?php 
+                                        endforeach;
+                                    ?>
+                                    <?php 
+                                        if($page_key == count($arr) - 1 ) {
+                                            ?>
+                                                <tr>
+                                                    <td scope="row" class="text-center">รวม</td>
+                                                    <td colspan="4" class="text-end">฿ <?php echo number_format($total, 2); ?> บาท</td>
+                                                </tr>
+                                            <?php
+                                        }
+                                    ?>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="col" style="">
-                                <span style="font-size: 12px;">
-                                    <?php echo $product_id ?>
-                                </span>
-                            </div>
+                            <?php 
+                                if($page_key == count($arr) - 1 ) {
+                                    ?>
+                                        <div class="row" style="top: 100px; padding: 0 58px 10px 58px;">
+                                            <div class="mt-5 col-6 text-center">
+                                                <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">....................................................</span>
+                                                <span class="col d-flex justify-content-center" style="font-size: 9px;margin-top: 3px;">( <?php echo $school_name ?> )</span><br>
+                                                <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: -20px;">
+                                                    ผู้ได้รับบริจาค
+                                                </span>
+                                            </div>
+                                            <div class="mt-5 col-6 text-center">
+                                                <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">....................................................</span>
+                                                <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">( .................................................... )</span><br>
+                                                <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: -20px;">
+                                                    ผู้บริจาค
+                                                </span>
+                                            </div>
+                                        </div>
+                                    <?php
+                                }
+                            ?>
                         </div>
-                        <div class="row" style="margin-top: 10px;">
-                            <div style="width: 118px;">
-                                <span style="font-size: 12px;">
-                                    ชื่อโครงการ                  
-                                </span>
-                            </div>
-                            <div class="col" style="width: 80px;">
-                                <span style="font-size: 12px;">
-                                    กตัญญู
-                                    <!-- <?php echo $school_name ?> -->
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col d-flex flex-row-reverse 2" style="width: 150px;margin-right: 14px;">
-                    <div>
-                        <div class="row" style="width: 200px;">
-                            <div style="width: 70px;">
-                                <span style="font-size: 12px;">
-                                    วันที่                    
-                                </span>
-                            </div>
-                            <div class="col text-center" style="border-bottom: 1px solid black;">
-                                <span style="font-size: 12px;">
-                                    <?php echo DateThai($explode_doc_datetime); ?>
-                                </span>
-                            </div>
-                        </div>
-                        <!-- <div class="row" style="margin-top: 10px;">
-                            <div style="width: 70px;">
-                                <span style="font-size: 12px;">
-                                    วันที่                    </span>
-                            </div>
-                            <div class="col" style="width: 80px;border-bottom: 1px solid black;">
-                                <span style="font-size: 12px;">08 พฤษภาคม 2567</span>
-                            </div>
-                        </div> -->
-                    </div>
-                </div>
-            </div>
-            <div class="row" style="position: relative; padding: 70px 58px 0 58px;">
-                <table class="table table-bordered border-dark">
-                    <thead class="table-active">
-                        <th class='text-center'>ลำดับ</th>
-                        <th class='text-center'>เลขที่เอกสาร</th>
-                        <th class='text-center'>ชื่อโรงเรียน</th>
-                        <th class='text-center'>ยอดเงิน(บาท)</th>
-                        <!-- <th>หมายเหตุ</th> -->
-                    </thead>
-                    <tbody>
-                    <?php
-                    $x = 1;
-                    while ($row = mysqli_fetch_object($result)) 
-                    {
-                    ?>
-                        <tr>
-                            <td class='text-center' style='font-size: 14px;'> <?php echo $x++; ?></td>
-                            <td class='text-center' style='font-size: 14px;'> <?php echo $row->doc_no; ?></td>
-                            <td style='font-size: 14px;'> <?php echo $row->school_name; ?></td>
-                            <td class='text-end' style='font-size: 14px;'> <?php echo number_format($row->do_reedem, 2); ?></td>
-                            <!-- <td style='font-size: 14px;'></td> -->
-                        </tr>
-                    <?php } ?>
-                        <tr>
-                            <td scope="row" class="text-center">รวม</td>
-                            <td colspan="4" class="text-end">฿ <?php echo number_format($total, 2); ?> บาท</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="row" style="top-100px; padding: 0 58px 10px 58px;">
-                <div class="mt-5 col-6 text-center">
-                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">....................................................</span>
-                    <span class="col d-flex justify-content-center" style="font-size: 9px;margin-top: 3px;">( <?php echo $school_name ?> )</span><br>
-                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: -20px;">
-                        ผู้ได้รับบริจาค
-                    </span>
-                </div>
-                <div class="mt-5 col-6 text-center">
-                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">....................................................</span>
-                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">( .................................................... )</span><br>
-                    <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: -20px;">
-                        ผู้บริจาค
-                    </span>
-                </div>
-            </div>
-        </div>
-    </page>
+                    </page>
+                <?php 
+            endforeach; 
+        ?>
+    </div>
 </body>
 <html>
 
@@ -525,4 +519,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 <script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script>
 <script src="../js_donate/function_pdf.js"></script>
 <script>
+    function myFunction() {
+        window.print();
+    }
 </script>
