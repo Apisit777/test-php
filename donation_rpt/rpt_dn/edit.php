@@ -12,17 +12,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $doc_no = $_GET["doc_no"];
 
     $start = 0;
-    $rows_per_page = 8;
+    $rows_per_page = 16;
 
-    $records = $kty_donate->query("SELECT * 
-                                   FROM trn_dona_tosc_head
-                                   ");
-    // $records = $kty_donate->query("SELECT trn_dona_tosc_list.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
-    //                             FROM trn_dona_tosc_head
-    //                             INNER JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
-    //                             INNER JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
-    //                             WHERE trn_dona_tosc_list.doc_no = '$doc_no'
-    //                             GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id");
+    // $records = $kty_donate->query("SELECT * FROM trn_dona_tosc_head");
+
+    $records = $kty_donate->query("SELECT trn_dona_tosc_list.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
+                                FROM trn_dona_tosc_head
+                                INNER JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+                                INNER JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+                                WHERE trn_dona_tosc_list.doc_no = '$doc_no'
+                                GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id");
 
     $nr_of_rows = $records->num_rows;
 
@@ -69,8 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         $json_array_result[] = $row;
     }		
-    // print(json_encode(count($json_array_result)));
     // print(json_encode($json_array_result));
+    // print(json_encode(count($json_array_result)));
 
     $result_sum = mysqli_query($kty_donate, $sql_sum);
     // $result_sum_do_reedem = mysqli_query($kty_donate, $sql_do_reedem);
@@ -366,6 +365,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         <div id="back" class="no-print">
             <a class='btn btn-dark' href='index.php'><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
         </div>
+
+
         <?php $arr = range(1, $pages);
             foreach($arr as $page_key=> $value): 
                 ?>
@@ -373,7 +374,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                     <page size="A4" style="position: relative; overflow: hidden;">
                         <!-- <div class="background_img">
                         </div>                            -->
-                        <span class="print_page_number" style="position: absolute; top: 15px; right: 25px">
+                        <span class="print_page_number" style="font-size: 12px; position: absolute; top: 15px; right: 25px">
                             <?php echo $page_key + 1; ?>
                         </span>
                         <?php 
@@ -449,7 +450,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                                 <?php
                             }
                         ?>
-                        <div class="pdf-page size-a4" style="padding-bottom: 175px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <?php 
+                            if($page_key == 0) {
+                                ?>
+                                    <div class="pdf-page size-a4" style="padding-bottom: 208px; display: flex; flex-direction: column; justify-content: space-between;">
+                                <?php
+                            } else {
+                                ?>
+                                    <div class="pdf-page size-a4" style="padding-bottom: 175px; display: flex; flex-direction: column; justify-content: space-between; height: 111.9%;">
+                                <?php
+                            }
+                        ?>
                             <div class="row" style="position: relative; padding: 70px 58px 0 58px;">
                                 <table class="table table-bordered border-dark">
                                     <thead class="table-active">
@@ -467,7 +478,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                                                 <tr>
                                                     <td class='text-center' style='font-size: 14px;'> 
                                                         <?php
-                                                            $x = $key+1+($rows_per_page * $page_key);
+                                                            $x = $key + 1 +($rows_per_page * $page_key);
                                                             echo $x; 
                                                         ?>
                                                     </td>
