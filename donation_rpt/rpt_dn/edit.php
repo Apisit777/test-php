@@ -14,7 +14,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $start = 0;
     $rows_per_page = 8;
 
-    $records = $kty_donate->query("SELECT * FROM trn_dona_tosc_head");
+    $records = $kty_donate->query("SELECT * 
+                                   FROM trn_dona_tosc_head
+                                   ");
+    // $records = $kty_donate->query("SELECT trn_dona_tosc_list.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
+    //                             FROM trn_dona_tosc_head
+    //                             INNER JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+    //                             INNER JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+    //                             WHERE trn_dona_tosc_list.doc_no = '$doc_no'
+    //                             GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id");
+
     $nr_of_rows = $records->num_rows;
 
     $pages = ceil($nr_of_rows / $rows_per_page);
@@ -54,19 +63,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $result = mysqli_query($kty_donate, $sql) or die(mysqli_error($kty_donate));
     $result_text = mysqli_query($kty_donate, $sql_text) or die(mysqli_error($kty_donate));
     $json_array_result = array();
-    $json_array_result[] = $result;
+    // $json_array_result[] = $result;
 
     while($row = mysqli_fetch_object($result))   {
 
         $json_array_result[] = $row;
     }		
-    print(json_encode($json_array_result));
+    // print(json_encode(count($json_array_result)));
+    // print(json_encode($json_array_result));
 
     $result_sum = mysqli_query($kty_donate, $sql_sum);
     // $result_sum_do_reedem = mysqli_query($kty_donate, $sql_do_reedem);
     // $resultCheck = mysqli_num_rows($result_sum_do_reedem);
 
-    $row = $result->fetch_assoc();
+    // $row = $result->fetch_assoc();
     $row_text = $result_text->fetch_assoc();
     $row_sum = $result_sum->fetch_assoc();
 
@@ -363,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                     <page size="A4" style="position: relative; overflow: hidden;">
                         <!-- <div class="background_img">
                         </div>                            -->
-                        <span class="print_page_number" style="position: absolute; top: 15px; right: 10px">
+                        <span class="print_page_number" style="position: absolute; top: 15px; right: 25px">
                             <?php echo $page_key + 1; ?>
                         </span>
                         <?php 
