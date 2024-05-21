@@ -9,19 +9,20 @@ $school_name = '';
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     $id = $_GET["id"];
-    $doc_no = $_GET["doc_no"];
+    // $doc_no = $_GET["doc_no"];
+    $school_id = $_GET["school_id"];
 
     $start = 0;
-    $rows_per_page = 16;
+    $rows_per_page = 10;
 
     // $records = $kty_donate->query("SELECT * FROM trn_dona_tosc_head");
 
-    $records = $kty_donate->query("SELECT trn_dona_tosc_list.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
-                                FROM trn_dona_tosc_head
-                                INNER JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
-                                INNER JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
-                                WHERE trn_dona_tosc_list.doc_no = '$doc_no'
-                                GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id");
+    $records = $kty_donate->query("SELECT trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
+    FROM trn_dona_tosc_head
+    LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+    LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+    WHERE mas_school.school_id = '$school_id'
+    GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_id, mas_school.school_name, trn_dona_tosc_list.product_id");
 
     $nr_of_rows = $records->num_rows;
 
@@ -36,28 +37,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                   FROM trn_dona_tosc_head
                   LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
                   LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
-                  WHERE trn_dona_tosc_list.doc_no = '$doc_no'
-                  GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id
+                  WHERE mas_school.school_id = '$school_id'
+                  GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name
                   LIMIT $start, $rows_per_page";
 
-    $sql = "SELECT trn_dona_tosc_list.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
+    // $sql = "SELECT trn_dona_tosc_list.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
+    //         FROM trn_dona_tosc_head
+    //         LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
+    //         LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
+    //         WHERE trn_dona_tosc_list.doc_no = '$doc_no'
+    //         GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id";
+    $sql = "SELECT trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id, mas_school.school_name AS school_name, trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime, trn_dona_tosc_head.do_reedem, SUM(do_reedem) AS do_reedem
             FROM trn_dona_tosc_head
             LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
             LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
-            WHERE trn_dona_tosc_list.doc_no = '$doc_no'
-            GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_name, trn_dona_tosc_list.product_id";
+            WHERE mas_school.school_id = '$school_id'
+            GROUP BY trn_dona_tosc_head.doc_no, mas_school.school_id, mas_school.school_name, trn_dona_tosc_list.product_id";
 
     $sql_sum = "SELECT SUM(do_reedem) AS total
                 FROM trn_dona_tosc_head
                 LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
                 LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
-                WHERE trn_dona_tosc_list.doc_no = '$doc_no' ";
+                WHERE mas_school.school_id = '$school_id'";
 
     $sql_text = "SELECT trn_dona_tosc_list.product_id AS product_id, trn_dona_tosc_list.doc_datetime AS doc_datetime
                 FROM trn_dona_tosc_head
                 LEFT JOIN mas_school ON trn_dona_tosc_head.school_id =  mas_school.school_id
                 LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
-                WHERE trn_dona_tosc_list.doc_no = '$doc_no'";
+                WHERE mas_school.school_id = '$school_id'";
 
     $result = mysqli_query($kty_donate, $sql) or die(mysqli_error($kty_donate));
     $result_text = mysqli_query($kty_donate, $sql_text) or die(mysqli_error($kty_donate));
@@ -368,7 +375,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 
         <?php $arr = range(1, $pages);
+
             foreach($arr as $page_key=> $value): 
+                // echo "<pre>";
+                // print_r($page_key);
+                // echo "</pre>";
                 ?>
                     <!--Page -->
                     <page size="A4" style="position: relative; overflow: hidden;">
@@ -466,46 +477,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                                     <thead class="table-active">
                                         <th class='text-center'>ลำดับ</th>
                                         <th class='text-center'>เลขที่เอกสาร</th>
-                                        <th class='text-center'>ชื่อโรงเรียน</th>
+                                        <th class='text-center'>รายการ</th>
                                         <th class='text-center'>ยอดเงิน(บาท)</th>
                                         <!-- <th>หมายเหตุ</th> -->
                                     </thead>
                                     <tbody>
-                                    <?php
-                                        $data_slice = array_slice($json_array_result, $page_key * $rows_per_page, $rows_per_page);
-                                        foreach($data_slice as $key => $row): 
-                                            ?>
-                                                <tr>
-                                                    <td class='text-center' style='font-size: 14px;'> 
-                                                        <?php
-                                                            $x = $key + 1 +($rows_per_page * $page_key);
-                                                            echo $x; 
-                                                        ?>
-                                                    </td>
-                                                    <td class='text-center' style='font-size: 14px;'> <?php echo $row->doc_no; ?></td>
-                                                    <td style='font-size: 14px;'> <?php echo $row->school_name; ?></td>
-                                                    <td class='text-end' style='font-size: 14px;'> <?php echo number_format($row->do_reedem, 2); ?></td>
-                                                </tr>
-                                            <?php 
-                                        endforeach;
-                                    ?>
-                                    <?php 
-                                        if($page_key == count($arr) - 1 ) {
-                                            ?>
-                                                <tr>
-                                                    <td scope="row" class="text-center">รวม</td>
-                                                    <td colspan="4" class="text-end">฿ <?php echo number_format($total, 2); ?> บาท</td>
-                                                </tr>
-                                            <?php
-                                        }
-                                    ?>
+                                        <?php
+                                            $data_slice = array_slice($json_array_result, $page_key * $rows_per_page, $rows_per_page);
+                                            foreach($data_slice as $key => $row): 
+                                                ?>
+                                                    <tr>
+                                                        <td class='text-center' style='font-size: 14px;'> 
+                                                            <?php
+                                                                $x = $key + 1 +($rows_per_page * $page_key);
+                                                                echo $x; 
+                                                            ?>
+                                                        </td>
+                                                        <td class='text-center' style='font-size: 14px;'> <?php echo $row->doc_no; ?></td>
+                                                        <td class='text-center' style='font-size: 14px;'> <?php echo $row->product_id; ?></td>
+                                                        <td class='text-end' style='font-size: 14px;'> <?php echo number_format($row->do_reedem, 2); ?></td>
+                                                    </tr>
+                                                <?php 
+                                            endforeach;
+                                        ?>
+                                                <?php if($page_key == count($arr) - 1 ) {
+                                                ?>
+                                                    <tr>
+                                                        <td scope="row" class="text-center">รวม</td>
+                                                        <td colspan="4" class="text-end">฿ <?php echo number_format($total, 2); ?> บาท</td>
+                                                    </tr>
+                                                <?php
+                                            }
+                                        ?>
                                     </tbody>
                                 </table>
                             </div>
                             <?php 
                                 if($page_key == count($arr) - 1 ) {
                                     ?>
-                                        <div class="row" style="top: 100px; padding: 0 58px 10px 58px;">
+                                        <!-- <div class="row" style="top: 100px; padding: 0 58px 10px 58px;"> -->
+                                        <div class="row">
                                             <div class="mt-5 col-6 text-center">
                                                 <span class="col d-flex justify-content-center" style="font-size: 10px;margin-top: 5px;">....................................................</span>
                                                 <span class="col d-flex justify-content-center" style="font-size: 9px;margin-top: 3px;">( <?php echo $school_name ?> )</span><br>

@@ -11,7 +11,7 @@ $resultCheck = mysqli_num_rows($result);
 // LEFT JOIN trn_dona_tosc_list ON  trn_dona_tosc_head.doc_no = trn_dona_tosc_head.doc_no
 // WHERE trn_dona_tosc_list.product_id = 'P001'";
 
-$sql = "SELECT trn_dona_tosc_head.id AS id, trn_dona_tosc_head.doc_no AS doc_no
+$sql = "SELECT trn_dona_tosc_head.id AS id, trn_dona_tosc_head.doc_no AS doc_no, trn_dona_tosc_head.school_id AS school_id
         FROM trn_dona_tosc_head";
 
 $result = mysqli_query($kty_donate, $sql) or die(mysqli_error($kty_donate));
@@ -123,7 +123,7 @@ $title = "";
                                     <td> $row[id] </td>
                                     <td> $row[doc_no] </td>
                                     <td class='text-center'>
-                                        <a class='btn btn-sm btn-success' href='edit.php?id=$row[id]&doc_no=$row[doc_no]'><i class='fa fa-print' aria-hidden='true'></i> PDF</a>
+                                        <a class='btn btn-sm btn-success' href='edit.php?id=$row[id]&school_id=$row[school_id]'><i class='fa fa-print' aria-hidden='true'></i> PDF</a>
                                     </td>
                                 </tr>";
                         }
